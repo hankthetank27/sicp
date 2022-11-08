@@ -36,28 +36,8 @@
         (d 2))
     (+ x a b c d)))
 
-
-
 (define (fn3 x)
-  (+ (let ((x 1)
-           (y (+ x 2)))
-       (+ x y))
+  (+ (let ((x 10)
+           (y 12)
+       (+ x 5 y))
      x))
-
-(define (f g)
-  (g 2))
-
-(define (fixed-point f first-guess)
-  
-  (define (in-range? x y)
-    (< (abs (- x y)) 0.00001))
-  
-  (define (try guess)
-    (let ((next (f guess)))
-      (if (in-range? guess next)
-          next
-          (try next))))
-  
-  (try first-guess))
-
-;; at 1.3.4 in text----

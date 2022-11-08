@@ -65,4 +65,20 @@
      (+ 1 x))
    b))
 
+;; (1.35
+(define (fixed-point f first-guess)
+  
+  (define (in-range? x y)
+    (< (abs (- x y)) 0.00001))
+  
+  (define (try guess)
+    (let ((next (f guess)))
+      (if (in-range? guess next)
+          next
+          (try next))))
+  
+  (try first-guess))
+
+(fixed-point (lambda (x) (+ 1.0 (/ 1.0 x))) 1.0) 
+
 ;; (1.40
