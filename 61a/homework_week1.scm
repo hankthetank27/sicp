@@ -63,6 +63,11 @@
                 '())
             (checker (bf sen)))))
   (checker sen))
+
+;;6.
+(define (or-test x)
+  (or (= x 0) (or-test x)))
+
       
   
         
