@@ -27,7 +27,6 @@
                'me))
           (else wd)))
 
-
   (define (switcher sen num)
     (if (empty? sen)
         '()
@@ -51,7 +50,7 @@
   
   (checker (first nums) nums))
 
-;;5.
+;; .5
 (define (ends-e sen)
   (define (is-e? wd)
     (equal? (last wd) 'e))
@@ -64,7 +63,7 @@
             (checker (bf sen)))))
   (checker sen))
 
-;;6.
+;; .6
 (define (or-test x)
   (or (= x 0) (or-test x)))
 
