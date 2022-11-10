@@ -143,11 +143,12 @@
          s))
 
 ;; 4(EC).
-((lambda (fn n) (fn fn n))(lambda (fn n)
-                            (if (= 0 n)
-                                1
-                                (* n (fn fn (- n 1)))))
-                          5)
+((lambda (fn n) (fn fn n))
+ (lambda (fn n)
+   (if (= 0 n)
+       1
+       (* n (fn fn (- n 1)))))
+ 5)
 
  ;;or..
 (((lambda (fn)
