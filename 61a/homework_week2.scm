@@ -35,7 +35,6 @@
 (accumulate * 1 (lambda (x) x) 1 (lambda (x) (+ 1 x)) 10)
 
 ;; (1.33
-
 (define (filter-accumulate filter combiner null-value term a next b)
   (if (> a b)
       null-value
@@ -82,3 +81,45 @@
 (fixed-point (lambda (x) (+ 1.0 (/ 1.0 x))) 1.0) 
 
 ;; (1.40
+(define (cubic a b c)
+  (lambda (x)
+    (+ (* x x x)
+       (* a x x)
+       (* b x)
+       c)))
+
+;; (1.41
+(define (double f)
+  (lambda (x)
+    (f (f x))))
+
+(((double (double double)) (lambda (x) (+ x 1))) 5) ;; -> 21
+
+;; (1.43
+(define (repeated fn n)
+  (lambda (x)
+    (define (repeat res times)
+      (if (= times n)
+          res
+          (repeat (fn res) (+ times 1))))
+    (repeat x 0)))
+
+
+(define (repeated2 fn n)
+  (lambda (x)
+    (if (= n 0)
+        x
+        (fn ((repeated fn (- n 1)) x)))))
+
+
+;; (1.46
+
+(define (iterative-improve good-enough? improve)
+  (lambda (guess)
+    (if (good-enough? guess)
+        guess
+        ((iterative-improve good-enough?
+                            improve)(improve guess)))))
+
+
+

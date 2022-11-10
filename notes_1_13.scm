@@ -47,6 +47,9 @@
 (define (f g)
   (g 2))
 
+(define (average x y)
+  (/ (+ x y) 2.0))
+
 (define (fixed-point f first-guess)
   
   (define (in-range? x y)
@@ -60,4 +63,37 @@
   
   (try first-guess))
 
-;; at 1.3.4 in text----
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
+(define (sqrt x)
+    (fixed-point (average-damp (lambda (y) (/ x y)))
+                 1.0))
+
+;; at 1.3.4 (newtowns method) in text----
+(define dx 0.00001)
+
+(define (deriv g)
+  (lambda (x)
+    (/ (- (g (+ x dx))(g x))
+       dx)))
+
+(define (newtons-transform g)
+  (lambda (x)
+    (- x (/ (g x)
+            ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newtons-transform g) guess))
+
+
+(define (sqrt2 x)
+  (newtons-method (lambda(y) (- (* y y) x))
+                  1.0))
+
+
+
+
+
+
+    
