@@ -122,4 +122,41 @@
                             improve)(improve guess)))))
 
 
+(define (fixed-point2 f first-guess)
+  (define (in-range? guess)
+    (< (abs (- guess (f guess))) 0.00001))
+  ((iterative-improve in-range? f) first-guess))
 
+;; 2.
+(define (every fn s)
+  (if (empty? s)
+      '()
+      (se (fn (first s))
+          (every fn (bf s)))))
+
+;; 3.
+(every (lambda (letter) (word letter letter)) 'purple)
+
+(define (keep pred? s)
+  (every (lambda (x)
+           (if (pred? x) x '()))
+         s))
+
+;; 4(EC).
+((lambda (fn n) (fn fn n))(lambda (fn n)
+                            (if (= 0 n)
+                                1
+                                (* n (fn fn (- n 1)))))
+                          5)
+
+ ;;or..
+(((lambda (fn)
+    (lambda (n)
+      (fn fn n)))
+  (lambda (fun x)
+    (if (= x 0)
+	 1
+	 (* x (fun fun (- x 1))))))
+ 5)
+
+  
