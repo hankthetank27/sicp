@@ -113,7 +113,6 @@
 
 
 ;; (1.46
-
 (define (iterative-improve good-enough? improve)
   (lambda (guess)
     (if (good-enough? guess)
@@ -150,7 +149,7 @@
        (* n (fn fn (- n 1)))))
  5)
 
- ;;or..
+ ;;or.. 
 (((lambda (fn)
     (lambda (n)
       (fn fn n)))
