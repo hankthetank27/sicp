@@ -81,6 +81,30 @@
                 (lambda (i) 1.0)
                 100)
 
+;; (d. 1.38
+
+(define (e-euler k)
+  (+ 2.0 (cont-frac (lambda (x) 1)
+                     (lambda (x)
+                       (if (= (remainder x 3) 2)
+                           (/ (+ x 1) 1.5)
+                           1))
+                       k)))
+
+;; .2
+
+(define (next-perf x)
+  (define (sum-of-factors x i sum)
+    (if (= i x)
+        sum
+        (if ( = (remainder x i) 0)
+            (sum-of-factors x (+ i 1) (+ sum i))
+            (sum-of-factors x (+ i 1) sum))))
+  (if (= (sum-of-factors x 1 0) x)
+      x
+      (next-perf (+ 1 x))))
+
+
 
 
   
