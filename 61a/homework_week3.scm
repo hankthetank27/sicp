@@ -103,6 +103,15 @@
   (if (= (sum-of-factors x 1 0) x)
       x
       (next-perf (+ 1 x))))
+;; extra
+
+(define (num-of-partitions num)
+  (define (part num rest)
+    (cond ((= num 0) 1)
+          ((or (< num 0)(= rest 0)) 0)
+          (else (+ (part num (- rest 1))
+                   (part (- num rest) rest)))))
+  (part num num))
 
 
 
