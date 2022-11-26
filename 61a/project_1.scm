@@ -115,6 +115,20 @@
 (define (valentine-2 hand dealer)
   ((suit-strategy 'H (stop-at 19) (stop-at 17)) hand dealer))
 
+(define (majority s1 s2 s3)
+  (lambda (hand dealer)
+    (let ((a (if (s1 hand dealer) 1 0))
+          (b (if (s2 hand dealer) 1 0))
+          (c (if (s3 hand dealer) 1 0)))
+      (if (< 2 (+ a b c)) #f #t))))
+
+(define (maj-strat hand dealer)
+  ((majority valentine dealer-sensitive stop-at-17) hand dealer))
+
+(define (reckless strat)
+  (lambda (hand dealer)
+    (strat (bl hand) dealer)))
+
 
 
       
