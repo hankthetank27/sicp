@@ -16,3 +16,16 @@
   (display "/")
   (display (demon x))
   (newline))
+
+(define (make-list n)
+  (if (= 0 n)
+      '()
+      (cons n (make-list (- n 1)))))
+
+(define y (make-list 10))
+
+(define (length list)
+  (if (null? list)
+      0
+      (+ 1 (length (cdr list)))))
+      
