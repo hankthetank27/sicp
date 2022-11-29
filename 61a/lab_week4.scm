@@ -96,5 +96,16 @@
 (rect-perimeter (make-rectangle (make-point 1 1)
                                 (make-point 3 7)))
 
-    
+
+;2.18
+
+(define (reverse list)
+  (define (rev items res)
+    (if (null? items)
+        res
+        (rev (cdr items)
+             (cons (car items) res))))
+  (rev list '()))          
+
+(reverse (list 1 2 3 4 5))
 
