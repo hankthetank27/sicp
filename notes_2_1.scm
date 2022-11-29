@@ -28,4 +28,10 @@
   (if (null? list)
       0
       (+ 1 (length (cdr list)))))
-      
+
+(define (rev-list list)
+  (if (null? list)
+      list
+      (append (rev-list (cdr list)) (cdr list))))
+
+(rev-list y)
