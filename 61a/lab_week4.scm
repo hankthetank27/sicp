@@ -69,4 +69,32 @@
               (average (x-point (end-seg line))
                        (y-point (end-seg line)))))
 ;2.3
+(define (make-rectangle bottom-left top-right)
+  (cons bottom-left top-right))
+(define (bottom-left rect)
+  (car rect))
+(define (top-right rect)
+  (cdr rect))
+(define (bottom-right rect)
+  (make-point (x-point (top-right rect))
+              (y-point (bottom-left rect))))
+(define (top-left rect)
+  (make-point (x-point (bottom-left rect))
+              (y-point (top-right rect))))
+
+(define (rect-perimeter rect)
+  (define (length rect dir)
+    (cond ((= dir 0)
+           (abs (- (x-point (bottom-right rect))
+                   (x-point (bottom-left rect)))))
+          ((= dir 1)
+           (abs (- (y-point (top-right rect))
+                   (y-point (bottom-right rect)))))))
+    (* 2 (+ (length rect 0)
+            (length rect 1))))
+
+(rect-perimeter (make-rectangle (make-point 1 1)
+                                (make-point 3 7)))
+
+    
 
