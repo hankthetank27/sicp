@@ -130,3 +130,71 @@
 
 (for-each (lambda (x) (newline) (display x))
           (list 57 321 88))
+
+
+;;2.
+(define (substitute list old new)
+  (cond ((null? list) '())
+        ((equal? old (car list))
+         (cons new (substitute (cdr list) old new)))
+        ((pair? (car list))
+         (cons (substitute (car list) old new)
+               (substitute (cdr list) old new)))
+        (else
+         (cons (car list)(substitute (cdr list) old new)))))
+
+(substitute '((lead guitar) (bass guitar) (rhythm guitar) drums)
+'guitar 'axe)
+
+;;3.
+(define (substitute2 list old new)
+  (define (match-word word old new)
+    (cond ((null? old) word)
+          ((equal? word (car old))
+           (car new))
+          (else
+           (match-word word (cdr old) (cdr new)))))
+    
+  (cond ((null? list) '())
+        ((pair? (car list))
+         (cons (substitute2 (car list) old new)
+               (substitute2 (cdr list) old new)))
+        (else (cons (match-word (car list) old new)
+                    (substitute2 (cdr list) old new)))))
+
+(substitute2 '((4 calling birds) (3 french hens) (2 turtle doves))
+'(1 2 3 4) '(one two three four))
+
+;;.extra
+;2.6
+(define zero (lambda (f) (lambda (x) x)))
+
+(define (add-1 n) 
+   (lambda (f) (lambda (x) (f ((n f) x)))))
+
+(define one (lambda (f) (lambda (x) (f x))))
+(define two (lambda (f) (lambda (x) (f (f x)))))
+
+(define (add a b)
+  (lambda (f)
+   (lambda (x)
+     ((a f) ((b f) x)))))
+
+(define (mult a b)
+  (lambda (f)
+    (lambda (x)
+      ((a (b f)) x))))
+
+(define (exp a b)
+  (lambda (f)
+    (lambda (x)
+      (((a b) f) x))))
+
+(define (convert-num cn)
+  ((cn (lambda (x) (+ x 1))) 0))
+       
+
+
+
+
+   
