@@ -109,3 +109,11 @@
 
 (reverse (list 1 2 3 4 5))
 
+(define (reverse-2 list)
+  (if (null? list)
+      '()
+      (append (reverse-2 (cdr list))
+              (cons (car list) '()))))
+
+(reverse-2 (list 1 2 3 4 5))
+

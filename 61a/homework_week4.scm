@@ -110,6 +110,23 @@
 (same-parity 1 2 3 4 5 6 7)
 (same-parity 2 3 4 5 6 7)
         
-        
+
+;2.21
+(define (square-list items)
+  (if (null? items)
+      '()
+      (cons (* (car items)(car items))
+            (square-list (cdr items)))))
+
+(define (square-list-2 items)
+  (map (lambda (x) (* x x)) items))
+
+;2.23
+(define (for-each proc items)
+  (cond ((null? items))
+        (else (proc (car items))
+              (for-each proc (cdr items)))))
 
 
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
