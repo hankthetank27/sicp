@@ -34,13 +34,23 @@
   (cond ((null? x) false)
         ((eq? item (car x)) x)
         (else (memq item (cdr x)))))
-;;; (a b c)
-;;; ((george))
-;;; '((y1 y2))
-;;; '(y1 y2)
-;;; false
-;;; false
-;;; '(red shoes blue socks)
+  ;;; (a b c)
+  ;;; ((george))
+  ;;; '((y1 y2))
+  ;;; '(y1 y2)
+  ;;; false
+  ;;; false
+  ;;; '(red shoes blue socks)
 
 
 ;;2.27
+(define (deep-reverse list)
+  (define (rev init res)
+    (cond ((null? init) res)
+          ((pair? (car init))
+             (rev (cdr init)
+                  (cons (rev (car init) '())
+                        res)))
+          (else (rev (cdr init)
+                     (cons (car init) res)))))
+  (rev list '()))
