@@ -54,13 +54,11 @@
 
 (define (mobile-balanced? mobile)
   (define (toruqe branch)
-    (if (pair? (branch-structure branch))
-        (* (total-weight (branch-structure branch))
-           (+ (total-length (branch-structure branch))
-              (branch-length branch)))
-        (* (branch-structure branch)(branch-length branch))))
-  (= (toruqe (left-branch mobile))
-     (toruqe (right-branch mobile))))
+    (* (total-weight (branch-structure branch))(branch-length branch)))
+  (and (= (toruqe (left-branch mobile))
+          (toruqe (right-branch mobile)))
+       (mobile-balanced? (branch-structure (left-branch mobile)))
+       (mobile-balanced? (branch-structure (right-branch mobile)))))
 
 
           
