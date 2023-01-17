@@ -1,7 +1,6 @@
 #lang simply-scheme
 
 
-<<<<<<< HEAD
 ;2.24
    ;; '(1 (2 (3 4)))
 
@@ -12,9 +11,6 @@
    ;; ((1 2 3) 4 5 6)
    ;; ((1 2 3)(4 5 6))
 
-;2.29
-
-=======
 ;2.29
 (define (make-mobile left right)
   (cons left right))
@@ -126,7 +122,7 @@
 
 (subsets (list 1 2 3))
 
-;2.37
+;2.36
 (define (accumulate op init seq)
   (if (null? seq)
       init
@@ -148,7 +144,32 @@
                     (list 7 8 9)
                     (list 10 11 12)))
 
+;2.38
+; 1.5
+; 1/6
+; 3 2 1
+; 1 2 3
+; +
+
+
+;2.54
+
+(define (equal? x y)
+  (cond ((and (null? x)(null? y)) #t)
+        ((and (pair? (car x))(pair? (car y)))
+         (if (equal? (car x)(car y))
+             (equal? (cdr x)(cdr y))
+             #f))
+        ((eq? (car x)(car y))
+         (equal? (cdr x)(cdr y)))
+        (else #f)))
+
+(equal? '(this is a list)'(this is a list))
+(equal? '(this '(is a) list)'(this '(is a) list))
+(equal? '(this is a list)'(this '(is a) list))
+
+
+
 
   
           
->>>>>>> origin/main
