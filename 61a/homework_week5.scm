@@ -248,5 +248,35 @@
 
 (encode '(A D A B B C A) sample-tree)
 
-  
+;2.69
+(define (adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set)
+                    (adjoin-set x (cdr set))))))
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+      '()
+      (let ((pair (car pairs)))
+        (adjoin-set (make-leaf (car pair)   ;symbol
+                               (cadr pair)) ;freq
+                    (make-leaf-set (cdr pairs))))))
+
+(define (successive-merge leaf-set)
+  (define (merge set res)
+    (if (null? set)
+        res
+        (merge (cdr set)
+               (make-code-tree (car set) res))))
+  (merge (cdr leaf-set) (car leaf-set)))
+
+(define (generate-huffman-tree pairs)
+  (successive-merge (make-leaf-set pairs)))
+
+(define encoded-word (encode '(A D A B B C A)
+        (generate-huffman-tree '((D 1)(A 4)(C 1)(B 2)))))
+
+(decode encoded-word
+        (generate-huffman-tree '((D 1)(A 4)(C 1)(B 2))))
           
