@@ -279,4 +279,14 @@
 
 (decode encoded-word
         (generate-huffman-tree '((D 1)(A 4)(C 1)(B 2))))
-          
+
+;2.70
+
+(define alphabet (generate-huffman-tree
+                  '((A 2)(BOOM 1)(GET 2)(JOB 2)(NA 16)(SHA 3)(YIP 9)(WAH 1))))
+(encode '(GET A JOB) alphabet)
+(encode '(SHA NA NA NA NA NA NA NA NA NA) alphabet)
+;4 x amount of chars in string
+
+;2.71
+         
