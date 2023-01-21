@@ -289,4 +289,19 @@
 ;4 x amount of chars in string
 
 ;2.71
+;			(ABCDE) 31
+;			/	 \
+;		       /	  \
+;		   (ABCD) 15     E 16
+;		  /       \
+;		 /	   \
+;	     (ABC) 7       D 8
+;	     /      \
+;	    /	     \
+;	(AB) 3	    C 4
+;	/     \
+;      /       \
+;      A 1      B 2
+; 1
+; n-1
          
