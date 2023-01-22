@@ -1,16 +1,85 @@
-#lang simply-scheme
+#lang sicp
+(#%require sicp-pict)
 
 ;; Code for CS61A project 2 -- picture language
 
-(define (flipped-pairs painter)
-  (let ((painter2 (beside painter (flip-vert painter))))
-    (below painter2 painter2)))
+;;2.44
+;(define (up-split painter n)      #redefined in ex 2.45
+;  (if (= n 0)
+;      painter
+;      (let ((smaller (up-split painter (- n 1))))
+;        (below painter (beside smaller smaller)))))
 
-(define (right-split painter n)
-  (if (= n 0)
-      painter
-      (let ((smaller (right-split painter (- n 1))))
-	(beside painter (below smaller smaller)))))
+;;2.45
+
+(define (split direction split)
+  (define (proc painter n)
+    (if (= n 0)
+        painter
+        (let ((smaller (proc painter (- n 1))))
+          (direction painter (split smaller smaller)))))
+  proc)
+
+(define up-split (split below beside))
+(define right-split (split beside below))
+
+;;2.46
+
+(define (make-vect x y)
+  (cons x y))
+
+(define (xcor-vect v)
+  (car v))
+
+(define (ycor-vect v)
+  (cdr v))
+
+(define (comb-vect op)
+  (lambda (v1 v2)
+    (make-vect (op (xcor-vect v1)
+                   (xcor-vect v2))
+               (op (ycor-vect v1)
+                   (ycor-vect v2)))))
+
+(define add-vect (comb-vect +))
+(define sub-vect (comb-vect -))
+(define (scale-vect scale vect)
+  (make-vect (* scale (xcor-vect vect))
+             (* scale (ycor-vect vect))))
+
+;;2.47
+(define (make-frame origin edge1 edge2)
+  (list origin edge1 edge2))
+
+(define (origin-frame frame)
+  (car frame))
+
+(define (edge1-frame frame)
+  (cadr frame))
+
+(define (edge2-frame frame)
+  (caddr frame))
+
+;(define frame (make-frame (make-vect 0 0)
+;                          (make-vect 1 2)
+;                          (make-vect 3 4)))
+;(origin-frame frame)
+;(edge1-frame frame)
+;(edge2-frame frame)
+
+;2.48
+
+;; procs from book ------
+
+;(define (flipped-pairs painter)
+;  (let ((painter2 (beside painter (flip-vert painter))))
+;    (below painter2 painter2)))
+
+;(define (right-split painter n)       #redefined in ex 2.45
+;  (if (= n 0)
+;      painter
+;      (let ((smaller (right-split painter (- n 1))))
+;	(beside painter (below smaller smaller)))))
 
 (define (corner-split painter n)
   (if (= n 0)
@@ -46,10 +115,10 @@
 ; (define flipped-pairs
 ;   (square-of-four identity flip-vert identity flip-vert))
 
-(define (square-limit painter n)
-  (let ((combine4 (square-of-four flip-horiz identity
-				  rotate180 flip-vert)))
-    (combine4 (corner-split painter n))))
+;(define (square-limit painter n)
+;  (let ((combine4 (square-of-four flip-horiz identity
+;				  rotate180 flip-vert)))
+;    (combine4 (corner-split painter n))))
 
 (define (frame-coord-map frame)
   (lambda (v)
