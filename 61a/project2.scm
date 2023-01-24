@@ -20,7 +20,8 @@
   proc)
 
 (define up-split (split below beside))
-(define right-split (split beside below))
+(define right-split (split beside below))s
+
 
 ;;2.46
 (define (make-vect x y)
@@ -66,7 +67,7 @@
 ;(edge2-frame frame)
 
 ;2.48
-(define (make-segment origin start-vect end-vect)
+(define (make-segment start-vect end-vect)
   (cons start-vect end-vect))
 (define (start-segment seg)
   (car seg))
@@ -76,28 +77,25 @@
 ;2.49
 ;; a)
 (define outline
-  ((segments->painter
+  (segments->painter
     (list (make-segment (make-vect 0.0 0.0)(make-vect 0.0 1.0))
           (make-segment (make-vect 0.0 1.0)(make-vect 1.0 1.0))
           (make-segment (make-vect 1.0 1.0)(make-vect 1.0 0.0))
-          (make-segment (make-vect 1.0 0.0)(make-vect 0.0 0.0))))
-   (make-frame 0.0 1.0 1.0)))
+          (make-segment (make-vect 1.0 0.0)(make-vect 0.0 0.0)))))
 
 ;; b)
 (define x-drawing
-  ((segments->painter
+  (segments->painter
     (list (make-segment (make-vect 0.0 1.0)(make-vect 1.0 0.0))
-          (make-segment (make-vect 1.1 1.1)(make-vect 0.0 0.0))))
-   (make-frame 0.0 1.0 1.0)))
+          (make-segment (make-vect 1.1 1.1)(make-vect 0.0 0.0)))))
 
 ;; c)
 (define diamond
-  ((segments->painter
+  (segments->painter
     (list (make-segment (make-vect 0.0 0.5)(make-vect 0.5 1.0))
           (make-segment (make-vect 0.5 1.0)(make-vect 1.0 0.5))
           (make-segment (make-vect 1.0 0.5)(make-vect 0.5 0.0))
-          (make-segment (make-vect 0.5 0.0)(make-vect 0.0 0.5))))
-   (make-frame 0.0 1.0 1.0)))
+          (make-segment (make-vect 0.5 0.0)(make-vect 0.0 0.5)))))
 
 ;2.50
 (define (flip-horiz painter)
@@ -138,6 +136,7 @@
 (define (below-2 p1 p2)
   (rotate180 (rotate270 (below (rotate270 p1)
                                (rotate270 p2)))))
+
 
 ;; procs from book ------
 
@@ -199,22 +198,22 @@
 	       (scale-vect (ycor-vect v)
 			   (edge2-frame frame))))))
 
-(define (segments->painter segment-list)
-  (lambda (frame)
-    (for-each
-     (lambda (segment)
-       (draw-line
-	((frame-coord-map frame) (start-segment segment))
-	((frame-coord-map frame) (end-segment segment))))
-     segment-list)))
-
-(define (draw-line v1 v2)
-  (penup)
-  (setxy (- (* (xcor-vect v1) 200) 100)
-	 (- (* (ycor-vect v1) 200) 100))
-  (pendown)
-  (setxy (- (* (xcor-vect v2) 200) 100)
-	 (- (* (ycor-vect v2) 200) 100)))
+;(define (segments->painter segment-list)
+;  (lambda (frame)
+;    (for-each
+;     (lambda (segment)
+;       (draw-line
+;	((frame-coord-map frame) (start-segment segment))
+;	((frame-coord-map frame) (end-segment segment))))
+;     segment-list)))
+;
+;(define (draw-line v1 v2)
+;  (penup)
+;  (setxy (- (* (xcor-vect v1) 200) 100)
+;	 (- (* (ycor-vect v1) 200) 100))
+;  (pendown)
+;  (setxy (- (* (xcor-vect v2) 200) 100)
+;	 (- (* (ycor-vect v2) 200) 100)))
 
 (define (transform-painter painter origin corner1 corner2)
   (lambda (frame)
