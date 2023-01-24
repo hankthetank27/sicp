@@ -118,6 +118,26 @@
 		     (make-vect 0.0 0.0)
 		     (make-vect 1.0 1.0)))
 
+;2.51
+(define (below p1 p2)
+  (let ((split-point (make-vect 0.0 0.5)))
+    (let ((paint-top
+           (transform-painter p1
+                              split-point
+                              (make-vect 1.0 0.5)
+                              (make-vect 0.0 1.0)))
+          (paint-bot
+           (transform-painter p2
+                              (make-vect 0.0 0.0)
+                              (make-vect 1.0 0.0)
+                              split-point)))
+      (lambda (frame)
+        (paint-top frame)
+        (paint-bot frame)))))
+
+(define (below-2 p1 p2)
+  (rotate180 (rotate270 (below (rotate270 p1)
+                               (rotate270 p2)))))
 
 ;; procs from book ------
 
