@@ -11,7 +11,6 @@
 ;        (below painter (beside smaller smaller)))))
 
 ;;2.45
-
 (define (split direction split)
   (define (proc painter n)
     (if (= n 0)
@@ -24,7 +23,6 @@
 (define right-split (split beside below))
 
 ;;2.46
-
 (define (make-vect x y)
   (cons x y))
 
@@ -68,6 +66,39 @@
 ;(edge2-frame frame)
 
 ;2.48
+(define (make-segment origin start-vect end-vect)
+  (cons start-vect end-vect))
+(define (start-segment seg)
+  (car seg))
+(define (end-segment seg)
+  (cdr seg))
+
+;2.49
+;; a)
+(define outline
+  ((segments->painter
+    (list (make-segment (make-vect 0.0 0.0)(make-vect 0.0 1.0))
+          (make-segment (make-vect 0.0 1.0)(make-vect 1.0 1.0))
+          (make-segment (make-vect 1.0 1.0)(make-vect 1.0 0.0))
+          (make-segment (make-vect 1.0 0.0)(make-vect 0.0 0.0))))
+   (make-frame 0.0 1.0 1.0)))
+
+;; b)
+(define x-drawing
+  ((segments->painter
+    (list (make-segment (make-vect 0.0 1.0)(make-vect 1.0 0.0))
+          (make-segment (make-vect 1.1 1.1)(make-vect 0.0 0.0))))
+   (make-frame 0.0 1.0 1.0)))
+
+;; c)
+(define diamond
+  ((segments->painter
+    (list (make-segment (make-vect 0.0 0.5)(make-vect 0.5 1.0))
+          (make-segment (make-vect 0.5 1.0)(make-vect 1.0 0.5))
+          (make-segment (make-vect 1.0 0.5)(make-vect 0.5 0.0))
+          (make-segment (make-vect 0.5 0.0)(make-vect 0.0 0.5))))
+   (make-frame 0.0 1.0 1.0)))
+
 
 ;; procs from book ------
 
