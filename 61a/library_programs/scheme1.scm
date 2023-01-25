@@ -7,7 +7,7 @@
 
 (define (scheme-1)
   (display "Scheme-1: ")
-  (flush)
+  (flush-output)
   (print (eval-1 (read)))
   (scheme-1))
 
@@ -64,6 +64,8 @@
 	 (if (eval-1 (cadr exp))
 	     (eval-1 (caddr exp))
 	     (eval-1 (cadddr exp))))
+        ((and-exp? exp)
+         (eval-and (map eval-1 (cdr exp))))
 	((lambda-exp? exp) exp)
 	((define-exp? exp)
 	 (eval (list 'define (cadr exp) (maybe-quote (eval-1 (caddr exp))))))
@@ -110,9 +112,15 @@
 
 (define quote-exp? (exp-checker 'quote))
 (define if-exp? (exp-checker 'if))
+(define and-exp? (exp-checker 'and))
 (define lambda-exp? (exp-checker 'lambda))
 (define define-exp? (exp-checker 'define))
 
+(define (eval-and list)
+  (cond ((null? list) #t)
+        ((eq? (car list) #t)
+         (eval-and (cdr list)))
+        (else #f)))   
 
 ;; SUBSTITUTE substitutes actual arguments for *free* references to the
 ;; corresponding formal parameters.  For example, given the expression
