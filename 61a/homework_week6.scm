@@ -13,7 +13,7 @@
 
 ;dept install:
 (define (install-research-div)
-   (define (get-records emp-name file).......)
+   (define (get-records emp-name file)(file))
    (put 'get-record 'research get-record))
 
 ;HQ get:
@@ -23,7 +23,7 @@
 
 ;;B.
 ;dept install:
-(define (install-research-div)
+(define (install-research-div-2)
   (define (get-salary record)....)
   (put 'get-salaray 'reseach get-salary))
 
@@ -103,6 +103,18 @@
      (lambda (x y) (tag (equ-complex x y)))) 
 
 ;2.80
+(define (=zero? x) (apply-generic '=zero x))
+
+(put '=zero '(scheme-number)
+     (lambda (x)(= 0 x)))
+
+(put '=zero '(rational)
+     (lambda (x)(=zero? (numer x)))) ;type-recurisve
+
+(put '=zero '(complex)
+     (lambda (x)                     ;type-recursive
+       (and (=zero? (real-part x))
+            (=zero? (imag-part x)))))
 
 ;2.81
 
