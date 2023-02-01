@@ -66,6 +66,8 @@
 	     (eval-1 (cadddr exp))))
         ((and-exp? exp)
          (eval-and (map eval-1 (cdr exp))))
+        ((let-exp? exp)
+         (eval-let (cdr exp)))
 	((lambda-exp? exp) exp)
 	((define-exp? exp)
 	 (eval (list 'define (cadr exp) (maybe-quote (eval-1 (caddr exp))))))
@@ -113,6 +115,7 @@
 (define quote-exp? (exp-checker 'quote))
 (define if-exp? (exp-checker 'if))
 (define and-exp? (exp-checker 'and))
+(define let-exp? (exp-checker 'let))
 (define lambda-exp? (exp-checker 'lambda))
 (define define-exp? (exp-checker 'define))
 
@@ -120,8 +123,29 @@
   (cond ((null? list) #t)
         ((eq? (car list) #t)
          (eval-and (cdr list)))
-        (else #f)))   
+        (else #f)))
 
+(define (map-1 proc sq)
+  (if (null? sq)
+      '()
+      (cons (apply-1 proc (list (car sq)))
+            (map-1 proc (cdr sq)))))
+
+(define (eval-let exp)
+  (define (let-names exp)
+    (map car (car exp)))
+  (define (let-vals exp)
+    (map cadr (car exp)))
+  (define let-body cadr)
+
+  (eval-1 (cons (list 'lambda (let-names exp)(let-body))
+                (let-vals exp))))
+
+;((lambda (x)
+;   (let ((hi 5))
+;     (+ x 5)))
+; 5)
+  
 ;; SUBSTITUTE substitutes actual arguments for *free* references to the
 ;; corresponding formal parameters.  For example, given the expression
 ;;

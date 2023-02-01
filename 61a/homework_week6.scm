@@ -117,10 +117,9 @@
             (=zero? (imag-part x)))))
 
 ;2.81
-
   ;1. apply-generic will infinitely recurse, as it passes the same two types back into apply-generic upon coersion.
   ;2. it will throw an error after failing to lookup both coersions, then checking them in both conditions where apply-generic is recursed.
-  ;(define (apply-generic op . args)
+(define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
@@ -153,6 +152,35 @@
                                type-tags))))))
               (error 
                "No method for these types"
-               (list op type-tags)))))))
+               (list op type-tags))))))))
 
 ;2.83
+(define (raise x)
+  (apply-generic 'raise x))
+
+(put 'raise '(scheme-number)
+     (lambda (x) (make-rational x 1)))
+(put 'raise '(rational)
+     (lambda (x) (make-real (/ (numer x)
+                               (denom x)))))
+(put 'raise '(real)
+     (lambda (x) (make-from-real-img x 0)))
+
+;2.84
+(define (get-coercion t1 t2)
+  (define (find-tree-level start target level)
+    (let ((type-s (type start))
+          (type-t (type target)))
+      (cond ((eq? type-s type-t) level)
+            ((eq? type-s 'complex) #f)
+            (else
+             (find-tree-level (raise start)
+                              target
+                              (+ 1 level))))))
+  (let ((depth (find-tree-level t1 t2 0)))
+    (define (raise-depth n level)
+      (if (= 0 level)
+          n
+          (raise-depth (raise n)
+                       (- level 1))))
+    (lambda (n) (rasie-depth n depth))))
