@@ -138,13 +138,9 @@
     (map cadr (car exp)))
   (define let-body cadr)
 
-  (eval-1 (cons (list 'lambda (let-names exp)(let-body))
+  (eval-1 (cons (list 'lambda (let-names exp)(let-body exp))
                 (let-vals exp))))
 
-;((lambda (x)
-;   (let ((hi 5))
-;     (+ x 5)))
-; 5)
   
 ;; SUBSTITUTE substitutes actual arguments for *free* references to the
 ;; corresponding formal parameters.  For example, given the expression
