@@ -144,3 +144,13 @@
   
 
 
+;3.10
+;-- drawn in notebook....
+; W1 -> [proc-body -> (if (>= ....)), proc-env -> [E2 - balance: 100] -> [E1 - inital-amount: 100] -> Global]
+
+
+;3.11
+; - the local state for 'acc' is kept in the frame/envrioment created when 'make-account' is called.
+; - when 'make-account' is called for a second time, a new enviroment is made, with the procedure containted in...
+;   'acc2' pointing to it, thereby creating new local variables for that instance.
+; - shared enviroment between 'acc' and 'acc2' are primitive procedures, or anything else in the global env.
