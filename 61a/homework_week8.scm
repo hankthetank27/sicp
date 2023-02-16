@@ -154,3 +154,13 @@
 ; - when 'make-account' is called for a second time, a new enviroment is made, with the procedure containted in...
 ;   'acc2' pointing to it, thereby creating new local variables for that instance.
 ; - shared enviroment between 'acc' and 'acc2' are primitive procedures, or anything else in the global env.
+
+;;lecture example____
+(define make-count
+  (let((glob 0))
+    (lambda ()
+      (let ((loc 0))
+        (lambda ()
+          (set! loc (+ loc 1))
+          (set! glob (+ glob 1))
+          (list loc glob))))))
