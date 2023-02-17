@@ -57,7 +57,7 @@ list1 ;((a x y) y)
   (set-cdr! (last-pair x) x)
   x)
 
-(define _z (make-cycle '(a b c)))
+(define _z (make-cycle (list 'a 'b 'c)))
 
 ; (last-pair _z) causes infinte recursion. the cdr of the last pair of the input to make-cycle in the
 ; definition of _z points to the last pair to the input, making it a cyclical list.
