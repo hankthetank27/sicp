@@ -7,11 +7,12 @@
       x
       (cons (car x) (append (cdr x) y))))
 
+(define (find-last x)
+  (if (null? (cdr x))
+      x
+      (find-last (cdr x))))
+
 (define (append! x y)
-  (define (find-last x)
-    (if (null? (cdr x))
-        x
-        (find-last (cdr x))))
   (set-cdr! (find-last x) y)
   x)
 
