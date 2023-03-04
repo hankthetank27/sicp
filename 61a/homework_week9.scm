@@ -37,7 +37,6 @@
                        1)))))
     (count x)))
 
-;;following not in 61a HW... but will do
 ;3.18
 (define (has-cycle? x)
   (let ((seen '()))
