@@ -154,5 +154,84 @@
 ((q2 'delete-queue!))
 
 
+;3.23
+(define (empty-dequeue? dequeue)
+  (and (null? (front-ptr dequeue))
+       (null? (rear-ptr dequeue))))
+
+(define (make-dequeue) (cons '() '()))
+
+(define (make-dequeue-node item)
+  (cons (cons item '()) '()))
+
+(define (get-item dequeue end)
+  (if (empty-dequeue? dequeue)
+      (error "GET called with an empty queue" dequeue)
+      (caar (end dequeue))))
+
+(define (front-dequeue dequeue)
+  (get-item dequeue front-ptr))
+
+(define (rear-dequeue dequeue)
+  (get-item dequeue rear-ptr))
+
+(define (front-insert-dequeue! dequeue item)
+  (let ((new-node (make-dequeue-node item)))
+    (cond ((empty-dequeue? dequeue)
+           (set-front-ptr! dequeue new-node)
+           (set-rear-ptr! dequeue new-node))
+          (else
+           (set-cdr! new-node (front-ptr dequeue))
+           (set-cdr! (car (front-ptr dequeue)) new-node)
+           (set-front-ptr! dequeue new-node)))))
+
+(define (rear-insert-dequeue! dequeue item)
+  (let ((new-node (make-dequeue-node item)))
+    (cond ((empty-dequeue? dequeue)
+           (set-front-ptr! dequeue new-node)
+           (set-rear-ptr! dequeue new-node))
+          (else
+           (set-cdr! (rear-ptr dequeue) new-node)
+           (set-cdr! (car new-node) (rear-ptr dequeue))
+           (set-rear-ptr! dequeue new-node)))))
+
+(define (delete-front-dequeue! dequeue)
+  (cond ((empty-dequeue? dequeue)
+         (error "DELETE called with empty queue" dequeue))
+        (else
+         (begin
+           (set-front-ptr! dequeue (cdr (front-ptr dequeue)))
+           (set-cdr! (car (front-ptr dequeue)) '())))))
+
+(define (delete-rear-dequeue! dequeue)
+  (cond ((empty-dequeue? dequeue)
+         (error "DELETE called with empty queue" dequeue))
+        (else
+         (let ((prev (cdr (car (rear-ptr dequeue)))))
+           (set-cdr! prev '())
+           (set-rear-ptr! dequeue prev)))))
+               
+
+(define (print-dequeue dequeue)
+  (map (lambda (x) (car x)) (front-ptr dequeue)))
+
+
+(define dq (make-dequeue))
+(rear-insert-dequeue! dq 'a)
+(rear-insert-dequeue! dq 'b)
+(rear-insert-dequeue! dq 'c)
+(front-insert-dequeue! dq '1)
+(front-insert-dequeue! dq '2)
+(front-insert-dequeue! dq '3)
+(delete-front-dequeue! dq)
+(delete-front-dequeue! dq)
+(delete-rear-dequeue! dq)
+(delete-rear-dequeue! dq)
+(front-insert-dequeue! dq '3)
+(rear-insert-dequeue! dq 'b)
+
+(print-dequeue dq)
+  
+
 
 
