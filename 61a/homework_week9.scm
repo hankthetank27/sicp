@@ -31,10 +31,10 @@
       (cond ((memq x seen) 0)
             ((not (pair? x)) 0)
             (else
-             (begin (set! seen (cons x seen))
-                    (+ (count (car x))
-                       (count (cdr x))
-                       1)))))
+              (begin (set! seen (cons x seen))
+                     (+ (count (car x))
+                        (count (cdr x))
+                        1)))))
     (count x)))
 
 ;3.18
@@ -63,7 +63,7 @@
             ((eq? slow-ptr fast-ptr) #t)
             (else (detect slow-ptr fast-ptr)))))
   (detect x x))
-          
+
 (has-cycle-const? (list 2 2 2 2 2))
 (has-cycle-const? (make-cycle (list 2 2 2 2 2)))
 (has-cycle-const? (make-cycle (list 1 2 3 4 5)))
@@ -123,7 +123,7 @@
       (cond ((eq? m 'front-queue)
              (lambda ()
                (if (empty-queue?)
-                   (error "FRONT called with empty queue"))))
+                 (error "FRONT called with empty queue"))))
             ((eq? m 'insert-queue!)
              (lambda (item)
                (let ((new-pair (cons item '())))
@@ -132,16 +132,16 @@
                         (set-rear-ptr! new-pair)
                         front-ptr)
                        (else
-                        (set-cdr! rear-ptr new-pair)
-                        (set-rear-ptr! new-pair)
-                        front-ptr)))))
+                         (set-cdr! rear-ptr new-pair)
+                         (set-rear-ptr! new-pair)
+                         front-ptr)))))
             ((eq? m 'delete-queue!)
              (lambda ()
                (cond ((empty-queue?)
                       (error "DELETE called with empty queue"))
                      (else
-                      (set-front-ptr! (cdr front-ptr))
-                      front-ptr))))
+                       (set-front-ptr! (cdr front-ptr))
+                       front-ptr))))
             (else (error "Undefined operation -- QUEUE" m))))
     dispatch))
 
@@ -191,26 +191,26 @@
            (set-front-ptr! dequeue new-node)
            (set-rear-ptr! dequeue new-node))
           (else
-           (set-cdr! (rear-ptr dequeue) new-node)
-           (set-cdr! (car new-node) (rear-ptr dequeue))
-           (set-rear-ptr! dequeue new-node)))))
+            (set-cdr! (rear-ptr dequeue) new-node)
+            (set-cdr! (car new-node) (rear-ptr dequeue))
+            (set-rear-ptr! dequeue new-node)))))
 
 (define (delete-front-dequeue! dequeue)
   (cond ((empty-dequeue? dequeue)
          (error "DELETE called with empty queue" dequeue))
         (else
-         (begin
-           (set-front-ptr! dequeue (cdr (front-ptr dequeue)))
-           (set-cdr! (car (front-ptr dequeue)) '())))))
+          (begin
+            (set-front-ptr! dequeue (cdr (front-ptr dequeue)))
+            (set-cdr! (car (front-ptr dequeue)) '())))))
 
 (define (delete-rear-dequeue! dequeue)
   (cond ((empty-dequeue? dequeue)
          (error "DELETE called with empty queue" dequeue))
         (else
-         (let ((prev (cdr (car (rear-ptr dequeue)))))
-           (set-cdr! prev '())
-           (set-rear-ptr! dequeue prev)))))
-               
+          (let ((prev (cdr (car (rear-ptr dequeue)))))
+            (set-cdr! prev '())
+            (set-rear-ptr! dequeue prev)))))
+
 
 (define (print-dequeue dequeue)
   (map (lambda (x) (car x)) (front-ptr dequeue)))
@@ -231,7 +231,5 @@
 (rear-insert-dequeue! dq 'b)
 
 (print-dequeue dq)
-  
-
 
 
