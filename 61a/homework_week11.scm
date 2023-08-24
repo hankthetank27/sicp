@@ -20,7 +20,36 @@
      (apply stream-map
             (cons proc (map stream-cdr argstreams))))))
 
-;3.51 
+;3.51
+
+    (define (stream-enumerate-interval low high)
+      (if (> low high)
+        '()
+        (cons-stream
+          low
+          (stream-enumerate-interval (+ low 1) high))))
+
+    (define (stream-ref s n)
+      (if (= n 0)
+        (stream-car s)
+        (stream-ref (stream-cdr s) (- n 1))))
+
+    (define (display-line x)
+      (newline)
+      (display x))
+
+    (define (show x)
+      (display-line x)
+      x)
+
+    (define x (stream-map show (stream-enumerate-interval 0 10)))    
+
+    (stream-ref x 5)
+    (stream-ref x 7)
+
+    ; (stream-ref x 5) will print streams starting with cars of 1 2 3 4 5
+    ; (stream-ref x 7) will print streams starting with cars of 6 7
+    ; this is because the implmentation of delay is memoizing values
 
 ;3.52 
 
