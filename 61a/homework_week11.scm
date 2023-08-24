@@ -52,6 +52,41 @@
     ; this is because the implmentation of delay is memoizing values
 
 ;3.52 
+    (define (stream-for-each proc s)
+      (if (stream-null? s)
+        'done
+        (begin (proc (stream-car s))
+               (stream-for-each proc (stream-cdr s)))))
+
+    (define (stream-filter pred s)
+        (cond ((stream-null? s) the-empty-stream)
+              ((pred (stream-car s)) 
+               (cons-stream (stream-car s)
+                            (stream-filter pred 
+                                           (stream-cdr s))))
+              (else (stream-filter pred (stream-cdr s)))))
+
+    (define (display-stream s)
+      (stream-for-each display-line s))
+
+    (define sum 0) ; sum = 0
+
+    (define (accum x)
+       (set! sum (+ x sum))
+       sum) ;sum = 0
+
+    (define seq (stream-map accum (stream-enumerate-interval 1 20))) ;sum = 1
+    (define y (stream-filter even? seq)) ;(seq memo'd 1), 3, x6. sum = 6
+    (define z (stream-filter (lambda (x) (= (remainder x 5) 0))
+                             seq)) ;(seq memo'd 1, 3, 6), x10. sum = 10
+
+    (stream-ref y 7) ;(seq memo'd x6, 10), 15, 21, x28, x36, 45 ,55 ,x66 ,x78 ,91 ,105 ,x120 ,x136. sum = 136
+    (display-stream z) ;(seq memo'd x10, x15, 21, 28, 36) ... x210. sum = 210
+    sum
+
+    ; if delay had not been implemented using memoization, each call to filter or
+    ; map would recompute the list item based on the global variable sum, which is 
+    ; being mutated inside of filter/map, thus changing the returned list from each method.
 
 ;3.53 
 
