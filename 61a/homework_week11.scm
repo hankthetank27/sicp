@@ -69,6 +69,9 @@
     (define (display-stream s)
       (stream-for-each display-line s))
 
+    (define (display-stream-ref s n)
+      (stream-ref (stream-map display-line s) n))
+
     (define sum 0) ; sum = 0
 
     (define (accum x)
@@ -89,12 +92,52 @@
     ; being mutated inside of filter/map, thus changing the returned list from each method.
 
 ;3.53 
+    ; 1, 2, 4, 8, 16... 
+    ; Each element is the sum of the prior element and itself.
 
 ;3.54 
+    (define (add-streams s1 s2)
+      (stream-map + s1 s2))
+
+    (define integers (cons-stream 1 
+                                  (stream-map (lambda (x) (+ 1 x)) 
+                                              integers)))
+
+    (define (mul-streams s1 s2)
+        (stream-map * s1 s2))
+
+    (define factorials (cons-stream 1 (mul-streams integers factorials)))   
 
 ;3.55 
+    (define (partial-sums s)
+      (define res (cons-stream (stream-car s)
+                               (add-streams res (stream-cdr s))))
+      res)
 
 ;3.56 
+    (define (scale-stream s factor)
+      (stream-map (lambda (x)(* x factor)) s))
+
+    (define (merge s1 s2)
+      (cond ((stream-null? s1) s2)
+            ((stream-null? s2) s1)
+            (else
+              (let ((s1car (stream-car s1))
+                    (s2car (stream-car s2)))
+                (cond ((< s1car s2car)
+                       (cons-stream s1car (merge (stream-cdr s1) s2)))
+                      ((> s1car s2car)
+                       (cons-stream s2car (merge s1 (stream-cdr s2))))
+                      (else
+                        (cons-stream s1car
+                                     (merge (stream-cdr s1)
+                                            (stream-cdr s2)))))))))
+
+    (define S (cons-stream 1 (merge (scale-stream S 2)
+                                    (merge (scale-stream S 3)
+                                           (scale-stream S 5)))))
+
+    (display-stream-ref S 20)
 
 ;3.64 
 
