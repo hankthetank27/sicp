@@ -140,10 +140,78 @@
     (display-stream-ref S 20)
 
 ;3.64 
+(define (stream-limit s tolerance)
+  (if (< (abs (- (stream-car s)
+                 (stream-car (stream-cdr s))))
+         tolerance)
+    (stream-car (stream-cdr s))
+    (stream-limit (stream-cdr s) tolerance)))
 
 ;3.66 
+    (define (interleave s1 s2)
+      (if (stream-null? s1)
+        s2
+        (cons-stream (stream-car s1)
+                     (interleave s2 (stream-cdr s1)))))
+
+    (define (stream-append s1 s2)
+      (if (stream-null? s1)
+        s2
+        (cons-stream (stream-car s1)
+                     (stream-append (stream-cdr s1) s2))))
+
+    (define (pairs s t)
+      (cons-stream
+        (list (stream-car s)(stream-car t))
+        (interleave
+          (stream-map (lambda (x) (list (stream-car s) x))
+                      (stream-cdr t))
+          (pairs (stream-cdr s) (stream-cdr t)))))
+
+;3.67
+    (define (pairs-full s t)
+      (cons-stream
+        (list (stream-car s)(stream-car t))
+        (interleave
+          (interleave
+            (stream-map (lambda (x) (list (stream-car s) x))
+                        (stream-cdr t))
+            (stream-map (lambda (x) (list x (stream-car t)))
+                        (stream-cdr s)))
+          (pairs (stream-cdr s)(stream-cdr t)))))
 
 ;3.68
+    ; interleave is a normal procedure, and will evaluate both arguments at runtime
+    ; thus causing an infinite recursion.
+
+;3.70
+    (define (merge-weighted s1 s2 weight)
+      (cond ((stream-null? s1) s2)
+            ((stream-null? s2) s1)
+            (else
+              (let ((s1car (stream-car s1))
+                    (s2car (stream-car s2)))
+                (let ((s1weight (weight s1car))
+                      (s2weight (weight s2car)))
+                  (if (< s1weight s2weight)
+                    (cons-stream s1car 
+                                 (merge-weighted (stream-cdr s1) s2 weight))
+                    (cons-stream s2car 
+                                 (merge-weighted s1 (stream-cdr s2) weight))))))))
+
+    (define (sum-weight p)
+      (apply + p))
+
+    (define (weighted-pairs s t weight)
+      (cons-stream
+        (list (stream-car s)(stream-car t))
+        (merge-weighted
+          (stream-map (lambda (x) (list (stream-car s) x))
+                      (stream-cdr t))
+          (weighted-pairs (stream-cdr s) (stream-cdr t) weight)
+          weight)))
+
+    (display-stream-ref (weighted-pairs integers integers sum-weight) 50)
 
 ;2. Write and test two functions to manipulate nonnegative proper fractions. The first
 ;function, fract-stream, will take as its argument a list of two nonnegative integers, the
