@@ -230,6 +230,16 @@
 ;~~~~ Extra for experts ~~~~~
 
 ;3.59
+    ;a.
+    (define (integrate-series s)
+      (stream-map / s integers))
+
+    ;b.
+    (define cosine-series
+      (cons-stream 1 (integrate-series (stream-map - sine-series))))
+
+    (define sine-series
+      (cons-stream 0 (integrate-series cosine-series)))
 
 ;3.60
 
