@@ -131,6 +131,7 @@
       (cons (apply-1 proc (list (car sq)))
             (map-1 proc (cdr sq)))))
 
+
 (define (eval-let exp)
   (define (let-names exp)
     (map car (car exp)))
@@ -141,6 +142,31 @@
   (eval-1 (cons (list 'lambda (let-names exp)(let-body exp))
                 (let-vals exp))))
 
+
+(define (substitute exp params args bound)
+  (cond ((constant? exp) exp)
+        ((symbol? exp)
+         (if (memq exp bound)
+           exp
+           (lookup exp params args)))
+        ((quote-exp? exp) exp)
+        ((lambda-exp? exp)
+         (list 'lambda
+               (cadr exp)
+               (substitute (caddr exp) params args (append bound (cadr exp)))))
+        (else (map (lambda (subexp) (substitute subexp params args bound))
+                   exp))))
+
+(define (lookup name params args)
+  (cond ((null? params) name)
+        ((eq? name (car params)) (maybe-quote (car args)))
+        (else (lookup name (cdr params) (cdr args)))))
+
+(define (maybe-quote value)
+  (cond ((lambda-exp? value) value)
+        ((constant? value) value)
+        ((procedure? value) value)	; real Scheme primitive procedure
+        (else (list 'quote value))))
   
 ;; SUBSTITUTE substitutes actual arguments for *free* references to the
 ;; corresponding formal parameters.  For example, given the expression
@@ -195,30 +221,6 @@
 ;; case of a primitive procedure as the actual argument value; these
 ;; procedures shouldn't be quoted.
 
-(define (substitute exp params args bound)
-  (cond ((constant? exp) exp)
-	((symbol? exp)
-	 (if (memq exp bound)
-	     exp
-	     (lookup exp params args)))
-	((quote-exp? exp) exp)
-	((lambda-exp? exp)
-	 (list 'lambda
-	       (cadr exp)
-	       (substitute (caddr exp) params args (append bound (cadr exp)))))
-	(else (map (lambda (subexp) (substitute subexp params args bound))
-		   exp))))
-
-(define (lookup name params args)
-  (cond ((null? params) name)
-	((eq? name (car params)) (maybe-quote (car args)))
-	(else (lookup name (cdr params) (cdr args)))))
-
-(define (maybe-quote value)
-  (cond ((lambda-exp? value) value)
-	((constant? value) value)
-	((procedure? value) value)	; real Scheme primitive procedure
-	(else (list 'quote value))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
