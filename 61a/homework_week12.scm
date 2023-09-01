@@ -9,27 +9,27 @@
 
 ;------ lecture interpreter example -------
 
-(define (scheme)
-  (display ">")
-  (print (eval-x (read) the-global-evniroment))
-  (scheme))
-
-(define (eval-x exp env)
-  (cond ((self-evaluating? exp) exp)
-        ((symbol? exp) (lookup-in-env exp env))
-        ((special-form? exp) (do-special-form exp env))
-        (else (apply-x (eval-x (car exp) env)
-                       (map (lambda (x) (eval-x x env))
-                            (cdr exp))))))
-
-(define (apply-x proc args)
-  (if (primitive? proc)
-    (do-magic proc args)
-    (eval-x (body proc)
-            (extend-environment (formals proc)
-                                args
-                                (proc-env proc)))))
-
+;(define (scheme)
+;  (display ">")
+;  (print (eval-x (read) the-global-evniroment))
+;  (scheme))
+;
+;(define (eval-x exp env)
+;  (cond ((self-evaluating? exp) exp)
+;        ((symbol? exp) (lookup-in-env exp env))
+;        ((special-form? exp) (do-special-form exp env))
+;        (else (apply-x (eval-x (car exp) env)
+;                       (map (lambda (x) (eval-x x env))
+;                            (cdr exp))))))
+;
+;(define (apply-x proc args)
+;  (if (primitive? proc)
+;    (do-magic proc args)
+;    (eval-x (body proc)
+;            (extend-environment (formals proc)
+;                                args
+;                                (proc-env proc)))))
+;
 
 ;1. List all the procedures in the metacircular evaluator that call eval.
 
@@ -40,6 +40,7 @@
 ;5. In this lab exercise you will become familiar with the Logo programming language, for which you’ll be
 ;writing an interpreter in project 4.
 ;(ref PDF)
+
 
 ;4.1
 (define (list-of-values-lr exps env)
@@ -71,10 +72,89 @@
     (define (operands-with-call exp) (cddr exp))
 
 ;4.3
+   (define (eval-dd exp env)
+     (cond ((self-evaluating? exp) exp)
+           ((variable? exp) (lookup-variable-value exp env))
+           ((get 'op (operator exp)) ((get 'op (operator exp)) exp env))
+           ((applcation? exp)
+            (apply (eval-dd (operator exp) env)
+                   (map (lambda (x) (eval-dd x env))
+                        (operands exp))))
+           (else (error "Unknown expression" exp))))
 
 ;4.4
+    (define (and? exp) (tagged-list? exp 'and))
+    (define (and-clauses exp) (cdr exp))
+    (define (eval-and exp env)
+      (and-seq (and-clauses exp) env))
+    (define (and-seq clauses env)
+      (cond ((null? clauses) 'true)
+            ((true? (eval (car clauses) env))
+             (and-seq (cdr clauses) env))
+            (else 'false)))
 
+    (define (or? exp) (tagged-list? exp 'or))
+    (define (or-clauses exp) (cdr exp))
+    (define (eval-or exp env)
+      (or-seq (or-clauses exp) env))
+    (define (or-seq clauses env)
+      (cond ((null? clauses) 'false)
+            ((true? (eval (car clauses) env)) 'true)
+            (else (or-seq (cdr clauses) env))))
+
+    ; derived expressions
+    (define (eval-and-derived exp env)
+      (eval (and->if exp) env))
+    (define (and->if exp)
+      (expand-and (and-clauses exp)))
+    (define (expand-and clauses)
+      (if (null? clauses)
+        'true
+        (make-if (car clauses)
+                 (expland-and (cdr clauses))
+                 'false)))
+
+    (define (eval-or-derived exp env)
+      (eval (or->if exp) env))
+    (define (or->if exp)
+      (expand-or (or-clauses exp)))
+    (define (expand-or clauses)
+      (if (null? clauses)
+        'false
+        (make-if (car clauses)
+                 'true
+                 (expand-or (cdr clauses)))))
+    
 ;4.5
+    
+    (define (cond? exp) (tagged-list? exp 'cond))
+    (define (cond-clauses exp) (cdr exp))
+    (define (cond-else-clause? clause)
+      (eq? (cond-predicate clause) 'else))
+    (define (cond-predicate clause) (car clause))
+    (define (cond-actions clause) (cdr clase))
+    (define (cond->if exp)
+      (expand-clauses (cond-clauses exp)))
+
+    (define (handle-true clause)
+      (let ((actions (cond-actions clause))
+            (predicate (cond-predicate clause)))
+        (if (eq? '=> (car actions))
+          (list (cdr actions) predicate)
+          (sequence->exp actions))))
+
+    (define (expand-clauses clauses)
+      (if (null? clauses)
+        'false
+        (let ((first (car clauses))
+              (rest (cdr clauses)))
+          (if (cond-else-clause? first)
+            (if (null? rest)
+              (handle-true first)
+              (error "ELSE clause isn't last" clauses))
+            (make-if (cond-predicate first)
+                     (handle-true first)
+                     (expand-clauses rest))))))
 
 ;4.6
 
@@ -116,3 +196,19 @@
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;Extra for experts:
 ;Abelson & Sussman, exercises 4.16 through 4.21
+
+;; currying example
+
+(((lambda (x)
+   (lambda (y)
+     (+ x y)))
+  3)
+ 4)
+
+;x = 3
+
+((lambda (y)
+  (+ 3 y))
+  4)
+
+7
