@@ -157,6 +157,9 @@
                      (expand-clauses rest))))))
 
 ;4.6
+    (define (make-lambda parameters body)
+      (cons 'lambda (cons parameters body)))
+
     ;--for eval
     (define (let? exp)
       (tagged-list? (car exp) 'let))
@@ -164,8 +167,8 @@
       (eval (let->combination exp) env))
     ;--
         
-    (define (let-body statements)
-      (caddr statements))
+    (define (let-body exp)
+      (caddr exp))
     (define (let-vars exp)
       (map car (cadr exp)))
     (define (let-bindings exp)
@@ -175,6 +178,47 @@
             (let-bindings exp)))
 
 ;4.7*
+    ;;~~currying example~~
+    (((lambda (x)
+       (lambda (y)
+         (+ x y)))
+      3)
+     4) ;x = 3
+    ((lambda (y)
+      (+ 3 y))
+      4) ;return 7
+    ;;~~~~~~~~~~~~~~~~~~
+
+    (define let-star
+      (let* ((x 3)
+             (y (+ x 2))
+             (z (+ x y 5)))
+        (* x z)))
+
+    (define let-star-nested 
+      (let ((x 3))
+        (let ((y (+ x 2)))
+          (let ((z (+ x y 5)))
+            (* x z)))))
+
+    (define let-star-curried
+      ((lambda (x)
+         ((lambda (y)
+            ((lambda (z)
+               (* x z))
+             (+ x y 5)))
+          (+ x 2)))
+       3))
+
+    (define (let*->nested-lets exp)
+      (define (make-nest statements)
+        (if (null? statements)
+          (let-body exp)
+          (list 'let 
+                (list (car statements))
+                (make-nest (cdr statements)))))
+      (let->combination (make-nest (cadr exp))))
+    ; does not work bc let->combination returns a lambda
 
 ;4.10*
 
@@ -213,18 +257,5 @@
 ;Extra for experts:
 ;Abelson & Sussman, exercises 4.16 through 4.21
 
-;; currying example
 
-(((lambda (x)
-   (lambda (y)
-     (+ x y)))
-  3)
- 4)
 
-;x = 3
-
-((lambda (y)
-  (+ 3 y))
-  4)
-
-7
