@@ -157,6 +157,22 @@
                      (expand-clauses rest))))))
 
 ;4.6
+    ;--for eval
+    (define (let? exp)
+      (tagged-list? (car exp) 'let))
+    (define (eval-let exp env)
+      (eval (let->combination exp) env))
+    ;--
+        
+    (define (let-body statements)
+      (caddr statements))
+    (define (let-vars exp)
+      (map car (cadr exp)))
+    (define (let-bindings exp)
+      (map cdr (cadr exp)))
+    (define (let->combination exp)
+      (cons (make-lambda (let-vars exp) (let-body exp)) 
+            (let-bindings exp)))
 
 ;4.7*
 
