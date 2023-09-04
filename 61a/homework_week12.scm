@@ -211,18 +211,75 @@
        3))
 
     (define (let*->nested-lets exp)
-      (define (make-nest statements)
+      (define (make-let-nest statements)
         (if (null? statements)
           (let-body exp)
           (list 'let 
                 (list (car statements))
                 (make-nest (cdr statements)))))
-      (let->combination (make-nest (cadr exp))))
-    ; does not work bc let->combination returns a lambda
-
-;4.10*
+      (make-let-nest (cadr exp)))
 
 ;4.11*
+    ;;~~~~~ unchanged defs ~~~~~
+    (define (enclosing-environment env) (cdr env))
+    (define the-empty-environment '())
+    (define (first-frame env) (car env))
+    (define (extend-environment vars vals base-env)
+      (if (= (length vars) (length vals))
+        (cons (make-frame vars vals) base-env)
+        (if (< (length vars) (length vals))
+          (error "too many arguments supplied" vars vals)
+          (error "too few arguments supplied" vars vals))))
+    ;;~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    (define (make-frame variables values)
+      (cons 'frame (map cons variables values)))
+
+    (define (add-binding-to-frame! var val frame)
+       (set-cdr! frame 
+                 (cons (cons var val) (frame-pairs frame))))
+
+    (define (frame-pairs frame)
+      (cdr frame))
+    
+    (define (curr-frame-pair pairs)
+      (car pairs))
+
+    (define (rest-frame-pairs pairs)
+      (cdr pairs))
+    
+    (define (scan-pairs var pairs)
+      (cond ((null? pairs) #f)
+            ((eq? var (car (curr-frame-pair pairs)))
+             (curr-frame-pair pairs))
+            (else (scan-pairs var (rest-frame-pairs pairs)))))
+
+    (define (lookup-variable-value var env)
+      (define (env-loop env)
+        (if (eq? the-empty-environment env)
+          (error "Unbound variable" var)
+          (let ((res (scan-pairs var (frame-pairs (first-frame env)))))
+            (if res 
+              (cdr res)
+              (env-loop (enclosing-environment env))))))
+      (env-loop env))
+
+    (define (set-variable-value! var val env)
+      (define (env-loop env)
+        (if (eq? the-empty-environment env)
+          (error "Unbound variable" var)
+          (let ((res (scan-pairs var (frame-pairs (first-frame env)))))
+            (if res 
+              (set-cdr! res val)
+              (env-loop (enclosing-environment env))))))
+      (env-loop env))
+
+    (define (define-variable! var val env)
+      (let* ((frame (first-frame env))
+             (res (scan-pairs var (frame-pairs frame))))
+        (if res 
+          (set-cdr! res val)
+          (add-binding-to-frame! var val frame))))
 
 ;4.13
 
@@ -231,31 +288,31 @@
 ;4.15
 
 
-;2*. Modify the metacircular evaluator to allow type-checking of arguments to procedures.
-;Here is how the feature should work. When a new procedure is defined, a formal parameter
-;can be either a symbol as usual or else a list of two elements. In this case, the second
-;element is a symbol, the name of the formal parameter. The first element is an expression
-;whose value is a predicate function that the argument must satisfy. That function should
-;return #t if the argument is valid. For example, here is a procedure foo that has type-
+;2*. modify the metacircular evaluator to allow type-checking of arguments to procedures.
+;here is how the feature should work. when a new procedure is defined, a formal parameter
+;can be either a symbol as usual or else a list of two elements. in this case, the second
+;element is a symbol, the name of the formal parameter. the first element is an expression
+;whose value is a predicate function that the argument must satisfy. that function should
+;return #t if the argument is valid. for example, here is a procedure foo that has type-
 ;checked parameters num and list:
 ;> (define (foo (integer? num) ((lambda (x) (not (null? x))) list))
 ;(list-ref list num))
-;FOO
+;foo
 ;> (foo 3 ’(a b c d e))
-;D
+;d
 ;> (foo 3.5 ’(a b c d e))
-;Error: wrong argument type -- 3.5
+;error: wrong argument type -- 3.5
 ;> (foo 2 ’())
-;Error: wrong argument type -- ()
-;In this example we define a procedure foo with two formal parameters, named num and
-;list. When foo is invoked, the evaluator will check to see that the first actual argument
-;is an integer and that the second actual argument is not empty. The expression whose
+;error: wrong argument type -- ()
+;in this example we define a procedure foo with two formal parameters, named num and
+;list. when foo is invoked, the evaluator will check to see that the first actual argument
+;is an integer and that the second actual argument is not empty. the expression whose
 ;value is the desired predicate function should be evaluated with respect to foo’s defining
-;environment. (Hint: Think about extend-environment.)
+;environment. (hint: think about extend-environment.)
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-;Extra for experts:
-;Abelson & Sussman, exercises 4.16 through 4.21
+;extra for experts:
+;abelson & sussman, exercises 4.16 through 4.21
 
 
 
