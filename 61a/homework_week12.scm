@@ -1,10 +1,10 @@
 #lang sicp
 
-;CS 61A Week 12 Lab
+;cs 61a week 12 lab
 
-;Reading:
-;Abelson & Sussman, 4.1.1–6
-;MapReduce paper in course reader.
+;reading:
+;abelson & sussman, 4.1.1–6
+;mapreduce paper in course reader.
 ;(metacircular evaluator: ~cs61a/lib/mceval.scm
 
 ;------ lecture interpreter example -------
@@ -31,15 +31,15 @@
 ;                                (proc-env proc)))))
 ;
 
-;1. List all the procedures in the metacircular evaluator that call eval.
+;1. list all the procedures in the metacircular evaluator that call eval.
 
-;2. List all the procedures in the metacircular evaluator that call apply.
+;2. list all the procedures in the metacircular evaluator that call apply.
 
-;3. Explain why make-procedure does not call eval.
+;3. explain why make-procedure does not call eval.
 
-;5. In this lab exercise you will become familiar with the Logo programming language, for which you’ll be
+;5. in this lab exercise you will become familiar with the logo programming language, for which you’ll be
 ;writing an interpreter in project 4.
-;(ref PDF)
+;(ref pdf)
 
 
 ;4.1
@@ -61,12 +61,12 @@
     ;a.
     ; since the applcation of procedures is based on the predicate that expression
     ; is a pair, based on the assumption that all other matches have been exausted,
-    ; any assignment will be treated as an application. IE. (define x 3) will 
+    ; any assignment will be treated as an application. ie. (define x 3) will 
     ; try to be evlauated as (apply 'define (map (lambda (x) (eval x env)) '('x 3)))
 
     ;b.
     ; we can create a type tag for functions as a list starting with 'call 
-    ;EG.
+    ;eg.
     (define (applcation-with-call? exp) (tagged-list? exp 'call))
     (define (operator-with-call exp) (cadr exp))
     (define (operands-with-call exp) (cddr exp))
@@ -80,7 +80,7 @@
             (apply (eval-dd (operator exp) env)
                    (map (lambda (x) (eval-dd x env))
                         (operands exp))))
-           (else (error "Unknown expression" exp))))
+           (else (error "unknown expression" exp))))
 
 ;4.4
     (define (and? exp) (tagged-list? exp 'and))
@@ -151,7 +151,7 @@
           (if (cond-else-clause? first)
             (if (null? rest)
               (handle-true first)
-              (error "ELSE clause isn't last" clauses))
+              (error "else clause isn't last" clauses))
             (make-if (cond-predicate first)
                      (handle-true first)
                      (expand-clauses rest))))))
@@ -257,7 +257,7 @@
     (define (lookup-variable-value var env)
       (define (env-loop env)
         (if (eq? the-empty-environment env)
-          (error "Unbound variable" var)
+          (error "unbound variable" var)
           (let ((res (scan-pairs var (frame-pairs (first-frame env)))))
             (if res 
               (cdr res)
@@ -267,7 +267,7 @@
     (define (set-variable-value! var val env)
       (define (env-loop env)
         (if (eq? the-empty-environment env)
-          (error "Unbound variable" var)
+          (error "unbound variable" var)
           (let ((res (scan-pairs var (frame-pairs (first-frame env)))))
             (if res 
               (set-cdr! res val)
@@ -282,6 +282,32 @@
           (add-binding-to-frame! var val frame))))
 
 ;4.13
+    ;eval cond
+    (define (unbind? exp)
+      (tagged-list? exp 'unbind))
+
+    ;example list ('unbind 'varname env)
+    (define (make-unbound! exp env)
+      (unbine-variable! (cadr exp) env)
+      'ok)
+
+    ;we will unbind the variable in the current evnrioment if it exists.
+    (define (unbine-variable! var env)
+      (let* ((frame (first-frame env))
+             (vars (frame-variables frame))
+             (vals (frame-values frame)))
+        (define (scan curr-vars curr-vals prev-vars prev-vals)
+          (cond ((null? curr-vars) '())
+                ((eq? var (car curr-vars))
+                 (begin (set-cdr! prev-vars (cdr curr-vars))
+                        (set-cdr! prev-vals (cdr curr-vals))))
+                (else 
+                  (scan (cdr curr-vars) (cdr curr-vals) curr-vars curr-vals))))
+        (if (eq? var (car vars))
+          (begin
+            (set-car! frame (cdr vars))
+            (set-cdr! frame (cdr vals)))
+          (scan (cdr vars) (cdr vals) vars vals))))
 
 ;4.14
 

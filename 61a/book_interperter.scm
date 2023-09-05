@@ -1,58 +1,59 @@
 #lang sicp
 
-;-----incomplete definitions
+(define true #t)
+(define false #f)
 
 (define (eval exp env)
-  (cond ((self-evaluating? exp) 
-         exp)
-        ((variable? exp) 
-         (lookup-variable-value exp env))
-        ((quoted? exp) 
-         (text-of-quotation exp))
-        ((assignment? exp) 
-         (eval-assignment exp env))
-        ((definition? exp) 
-         (eval-definition exp env))
-        ((if? exp) 
-         (eval-if exp env))
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
         ((lambda? exp)
-         (make-lambda 
-           (lambda-parameters exp)
-           (lambda-body exp)
-           env))
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
         ((begin? exp)
-         (eval-sequence 
-           (begin-actions exp) 
-           env))
-        ((cond? exp) 
-         (eval (cond->if exp) env))
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
-         (apply (eval (operator exp) env)
-                (list-of-values 
-                  (operands exp) 
-                  env)))
+         (apply-x (eval (operator exp) env)
+                  (list-of-values (operands exp) env)))
         (else
           (error "Unknown expression 
                  type: EVAL" exp))))
 
-(define (apply procedure arguments)
+(define (apply-x procedure arguments)
   (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure 
-           procedure 
-           arguments))
+         (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
-         (eval-sequence
-           (procedure-body procedure)
-           (extend-environment
-             (procedure-parameters 
-               procedure)
-             arguments
-             (procedure-environment 
-               procedure))))
-        (else
-          (error "Unknown procedure 
-                 type: APPLY" 
-                 procedure))))
+         (eval-sequence (procedure-body procedure)
+                        (extend-environment (procedure-parameters procedure)
+                                            arguments
+                                            (procedure-environment procedure))))
+        (else (error "Unknown procedure type: APPLY" procedure))))
+
+(define (make-procedure params body env)
+  (list 'procedure params body env))
+
+(define (compound-procedure? proc)
+  (tagged-list? proc 'procedure))
+
+(define (procedure-parameters proc)
+  (cadr proc))
+
+(define (procedure-body proc)
+  (caddr proc))
+
+(define (procedure-environment proc)
+  (cadddr proc))
+
+(define (true? x)
+  (not (eq? x false)))
+
+(define (false? x)
+  (eq? x false))
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -274,18 +275,6 @@
     (scan (frame-variables frame)
           (frame-values frame))))
 
-(define (setup-environment)
-  (let ((initial-env
-          (extend-environment 
-            (primitive-procedure-names)
-            (primitive-procedure-objects)
-            the-empty-environment)))
-    (define-variable! 'true true initial-env)
-    (define-variable! 'false false initial-env)
-    initial-env))
-
-(define the-global-environment 
-  (setup-environment))
 
 (define (primitive-procedure? proc)
   (tagged-list? proc 'primitive))
@@ -298,8 +287,10 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
-        ⟨more primitives⟩ ))
-
+        (list '+ +)
+        (list '- -)
+        (list '* *)
+        (list '/ /)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
@@ -310,9 +301,21 @@
        primitive-procedures))
 
 (define (apply-primitive-procedure proc args)
-  (apply-in-underlying-scheme
+  (apply
     (primitive-implementation proc) args))
 
+(define (setup-environment)
+  (let ((initial-env
+          (extend-environment 
+            (primitive-procedure-names)
+            (primitive-procedure-objects)
+            the-empty-environment)))
+    (define-variable! 'true true initial-env)
+    (define-variable! 'false false initial-env)
+    initial-env))
+
+(define the-global-environment 
+  (setup-environment))
 
 (define input-prompt  ";;; M-Eval input:")
 (define output-prompt ";;; M-Eval value:")
@@ -343,7 +346,4 @@
             '<procedure-env>))
     (display object)))
 
-
 (driver-loop)
-
-
