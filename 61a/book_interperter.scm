@@ -17,6 +17,8 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((let? exp) (eval-let exp env))
+        ((let*? exp) (eval-let* exp env))
         ((application? exp)
          (apply-x (eval (operator exp) env)
                   (list-of-values (operands exp) env)))
@@ -78,10 +80,9 @@
                          env))))
 
 (define (eval-assignment exp env)
-  (set-variable-value! 
-    (assignment-variable exp)
-    (eval (assignment-value exp) env)
-    env)
+  (set-variable-value! (assignment-variable exp)
+                       (eval (assignment-value exp) env)
+                       env)
   'ok)
 
 (define (eval-definition exp env)
@@ -175,6 +176,37 @@
 (define (first-operand ops) (car ops))
 (define (rest-operands ops) (cdr ops))
 
+(define (let? exp)
+  (tagged-list? exp 'let))
+(define (eval-let exp env)
+  (eval (let->combination exp) env))
+(define (let*? exp)
+  (tagged-list? exp 'let*))
+(define (eval-let* exp env)
+  (eval (let*->nested-lets exp) env))
+
+(define (let-body exp)
+  (cddr exp))
+(define (let-vars exp)
+  (map car (cadr exp)))
+(define (let-bindings exp)
+  (map cadr (cadr exp)))
+(define (let*-body exp)
+  (caddr exp))
+
+(define (let->combination exp)
+  (cons (make-lambda (let-vars exp) (let-body exp)) 
+        (let-bindings exp)))
+
+(define (let*->nested-lets exp)
+  (define (make-let-nest statements)
+    (if (null? statements)
+      (let*-body exp)
+      (list 'let 
+            (list (car statements))
+            (make-let-nest (cdr statements)))))
+  (make-let-nest (cadr exp)))
+
 (define (cond? exp) 
   (tagged-list? exp 'cond))
 (define (cond-clauses exp) (cdr exp))
@@ -219,9 +251,9 @@
 (define (validate-type var val env)
   (if (symbol? var)
     var
-    (let ((type-valid? (eval (car var) env))
+    (let ((type-valid? (eval (cons (car var) (list val)) env))
           (typed-var (cadr var)))
-      (if (apply-x type-valid? (list val))
+      (if type-valid?
         typed-var
         (error "argument type invalid --" typed-var)))))
 
@@ -276,8 +308,7 @@
   (let ((frame (first-frame env)))
     (define (scan vars vals)
       (cond ((null? vars)
-             (add-binding-to-frame! 
-               var val frame))
+             (add-binding-to-frame! var val frame))
             ((eq? var (car vars))
              (set-car! vals val))
             (else (scan (cdr vars) 
@@ -318,11 +349,9 @@
     (primitive-implementation proc) args))
 
 (define (setup-environment)
-  (let ((initial-env
-          (extend-environment 
-            (primitive-procedure-names)
-            (primitive-procedure-objects)
-            the-empty-environment)))
+  (let ((initial-env (extend-environment (primitive-procedure-names)
+                                         (primitive-procedure-objects)
+                                         the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
     initial-env))

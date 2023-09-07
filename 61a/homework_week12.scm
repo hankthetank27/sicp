@@ -162,7 +162,7 @@
 
     ;--for eval
     (define (let? exp)
-      (tagged-list? (car exp) 'let))
+      (tagged-list? exp 'let))
     (define (eval-let exp env)
       (eval (let->combination exp) env))
     ;--
@@ -172,7 +172,7 @@
     (define (let-vars exp)
       (map car (cadr exp)))
     (define (let-bindings exp)
-      (map cdr (cadr exp)))
+      (map cadr (cadr exp)))
     (define (let->combination exp)
       (cons (make-lambda (let-vars exp) (let-body exp)) 
             (let-bindings exp)))
@@ -338,7 +338,8 @@
 ;value is the desired predicate function should be evaluated with respect to foo’s defining
 ;environment. (hint: think about extend-environment.)
 
-    (define (validate-type var val env)
+    ;calling apply directly
+    (define (validate-type-app var val env)
       (if (symbol? var)
         var
         (let ((type-valid? (eval (car var) env))
@@ -346,6 +347,16 @@
           (if (apply type-valid? (list val))
             typed-var
             (error "Argument type invalid --" typed-var)))))
+
+    ;using cons cell to implicly call apply
+    (define (validate-type var val env)
+      (if (symbol? var)
+        var
+        (let ((type-valid? (eval (cons (car var) (list val)) env))
+              (typed-var (cadr var)))
+          (if type-valid?
+            typed-var
+            (error "argument type invalid --" typed-var)))))
 
     (define (extend-environment vars vals base-env)
       ;we will check each variable for valid value types given the user supplied
