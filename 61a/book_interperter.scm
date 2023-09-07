@@ -29,6 +29,7 @@
          (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
          (eval-sequence (procedure-body procedure)
+                        ;we will check validity of argument types in extend-environment
                         (extend-environment (procedure-parameters procedure)
                                             arguments
                                             (procedure-environment procedure))))
@@ -84,10 +85,9 @@
   'ok)
 
 (define (eval-definition exp env)
-  (define-variable! 
-    (definition-variable exp)
-    (eval (definition-value exp) env)
-    env)
+  (define-variable! (definition-variable exp)
+                    (eval (definition-value exp) env)
+                    env)
   'ok)
 
 (define (self-evaluating? exp)
@@ -127,9 +127,8 @@
 (define (definition-value exp)
   (if (symbol? (cadr exp))
     (caddr exp)
-    (make-lambda 
-      (cdadr exp)   ; formal parameters
-      (cddr exp)))) ; body
+    (make-lambda (cdadr exp)   ; formal parameters
+                 (cddr exp)))) ; body
 
 (define (lambda? exp) 
   (tagged-list? exp 'lambda))
@@ -217,16 +216,27 @@
   (set-car! frame (cons var (car frame)))
   (set-cdr! frame (cons val (cdr frame))))
 
+(define (validate-type var val env)
+  (if (symbol? var)
+    var
+    (let ((type-valid? (eval (car var) env))
+          (typed-var (cadr var)))
+      (if (apply-x type-valid? (list val))
+        typed-var
+        (error "argument type invalid --" typed-var)))))
+
 (define (extend-environment vars vals base-env)
-  (if (= (length vars) (length vals))
-    (cons (make-frame vars vals) base-env)
-    (if (< (length vars) (length vals))
-      (error "Too many arguments supplied" 
-             vars 
-             vals)
-      (error "Too few arguments supplied" 
-             vars 
-             vals))))
+  ;we will check each variable for valid value types given the user supplied
+  ;type checking procedure, in the context of the procedures base environment.
+  (let ((vars (map (lambda (var val) 
+                     (validate-type var val base-env)) 
+                   vars 
+                   vals)))
+    (if (= (length vars) (length vals))
+      (cons (make-frame vars vals) base-env)
+      (if (< (length vars) (length vals))
+        (error "Too many arguments supplied" vars vals)
+        (error "Too few arguments supplied" vars vals)))))
 
 (define (lookup-variable-value var env)
   (define (env-loop env)
@@ -287,10 +297,13 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'eq? eq?)
+        (list 'symbol? symbol?)
         (list '+ +)
         (list '- -)
         (list '* *)
-        (list '/ /)))
+        (list '/ /)
+        (list '= =)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))

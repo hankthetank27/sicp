@@ -310,8 +310,10 @@
           (scan (cdr vars) (cdr vals) vars vals))))
 
 ;4.14
-
-;4.15
+    ;the underlying scheme map does not have any awareness of our scheme implementation.
+    ;when we pass the evuated procedure as argument in the form of a list 
+    ;('procedure params body env), map errors. It's probably best to avoid using
+    ;compound procedures as primitives in our interpreter.
 
 
 ;2*. modify the metacircular evaluator to allow type-checking of arguments to procedures.
@@ -335,6 +337,28 @@
 ;is an integer and that the second actual argument is not empty. the expression whose
 ;value is the desired predicate function should be evaluated with respect to foo’s defining
 ;environment. (hint: think about extend-environment.)
+
+    (define (validate-type var val env)
+      (if (symbol? var)
+        var
+        (let ((type-valid? (eval (car var) env))
+              (typed-var (cadr var)))
+          (if (apply type-valid? (list val))
+            typed-var
+            (error "Argument type invalid --" typed-var)))))
+
+    (define (extend-environment vars vals base-env)
+      ;we will check each variable for valid value types given the user supplied
+      ;type checking procedure, in the context of the procedures base environment.
+      (let ((vars (map (lambda (var val) 
+                         (validate-type var val base-env)) 
+                       vars 
+                       vals)))
+        (if (= (length vars) (length vals))
+          (cons (make-frame vars vals) base-env)
+          (if (< (length vars) (length vals))
+            (error "Too many arguments supplied" vars vals)
+            (error "Too few arguments supplied" vars vals)))))
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;extra for experts:
