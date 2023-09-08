@@ -4,7 +4,6 @@
 (define false #f)
 
 (define (eval exp env)
-  (newline)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
@@ -308,7 +307,7 @@
     (if (null? (car defs-exps))
       body
       (list (make-let (map (lambda (def)
-                             (list (definition-variable def) '*unassigned*))
+                             (list (definition-variable def) ''*unassigned*))
                            (car defs-exps))
                       (append (map (lambda (def)
                                      (list 'set! 

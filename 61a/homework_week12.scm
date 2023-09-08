@@ -400,31 +400,33 @@
     (define (make-let vars exps)
       (cons 'let (cons vars exps)))
 
-(define (scan-out-defines body)
-  (define (collect seqs defs exps)
-    (cond ((null? seqs) (cons defs exps))
-          ((definition? (car seqs))
-           (collect (cdr seqs) 
-                    (cons (car seqs) defs) 
-                    exps))
-          (else 
-            (collect (cdr seqs) 
-                     defs 
-                     (cons (car seqs) exps)))))
-  (let ((defs-exps (collect body '() '())))
-    (if (null? (car defs-exps))
-      body
-      (list (make-let (map (lambda (def)
-                             (list (definition-variable def) '*unassigned*))
-                           (car defs-exps))
-                      (append (map (lambda (def)
-                                     (list 'set! 
-                                           (definition-variable def) 
-                                           (definition-value def)))
-                                   (car defs-exps))
-                              (cdr defs-exps)))))))
+    (define (scan-out-defines body)
+      (define (collect seqs defs exps)
+        (cond ((null? seqs) (cons defs exps))
+              ((definition? (car seqs))
+               (collect (cdr seqs) 
+                        (cons (car seqs) defs) 
+                        exps))
+              (else 
+                (collect (cdr seqs) 
+                         defs 
+                         (cons (car seqs) exps)))))
+      (let ((defs-exps (collect body '() '())))
+        (if (null? (car defs-exps))
+          body
+          (list (make-let (map (lambda (def)
+                                 (list (definition-variable def) ''*unassigned*))
+                               (car defs-exps))
+                          (append (map (lambda (def)
+                                         (list 'set! 
+                                               (definition-variable def) 
+                                               (definition-value def)))
+                                       (car defs-exps))
+                                  (cdr defs-exps)))))))
 
-
+;c.
+    (define (make-procedure params body env)
+      (list 'procedure params (scan-out-defines body) env))
 
 
 
