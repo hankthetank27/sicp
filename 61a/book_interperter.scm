@@ -4,6 +4,7 @@
 (define false #f)
 
 (define (eval exp env)
+  (newline)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
@@ -38,7 +39,7 @@
         (else (error "Unknown procedure type: APPLY" procedure))))
 
 (define (make-procedure params body env)
-  (list 'procedure params body env))
+  (list 'procedure params (scan-out-defines body) env))
 
 (define (compound-procedure? proc)
   (tagged-list? proc 'procedure))
@@ -274,10 +275,11 @@
   (define (env-loop env)
     (define (scan vars vals)
       (cond ((null? vars)
-             (env-loop 
-               (enclosing-environment env)))
+             (env-loop (enclosing-environment env)))
             ((eq? var (car vars))
-             (car vals))
+               (if (eq? (car vals) '*unassigned*)
+                 (error "Variable value is undefined --" var)
+                 (car vals)))
             (else (scan (cdr vars) 
                         (cdr vals)))))
     (if (eq? env the-empty-environment)
@@ -287,12 +289,39 @@
               (frame-values frame)))))
   (env-loop env))
 
+
+(define (make-let vars exps)
+  (cons 'let (cons vars exps)))
+
+(define (scan-out-defines body)
+  (define (collect seqs defs exps)
+    (cond ((null? seqs) (cons defs exps))
+          ((definition? (car seqs))
+           (collect (cdr seqs) 
+                    (cons (car seqs) defs) 
+                    exps))
+          (else 
+            (collect (cdr seqs) 
+                     defs 
+                     (cons (car seqs) exps)))))
+  (let ((defs-exps (collect body '() '())))
+    (if (null? (car defs-exps))
+      body
+      (list (make-let (map (lambda (def)
+                             (list (definition-variable def) '*unassigned*))
+                           (car defs-exps))
+                      (append (map (lambda (def)
+                                     (list 'set! 
+                                           (definition-variable def) 
+                                           (definition-value def)))
+                                   (car defs-exps))
+                              (cdr defs-exps)))))))
+
 (define (set-variable-value! var val env)
   (define (env-loop env)
     (define (scan vars vals)
       (cond ((null? vars)
-             (env-loop 
-               (enclosing-environment env)))
+             (env-loop (enclosing-environment env)))
             ((eq? var (car vars))
              (set-car! vals val))
             (else (scan (cdr vars) 

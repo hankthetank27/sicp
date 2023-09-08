@@ -375,5 +375,58 @@
 ;extra for experts:
 ;abelson & sussman, exercises 4.16 through 4.21
 
+;4.16
+;a. 
+    (define (lookup-variable-value var env)
+      (define (env-loop env)
+        (define (scan vars vals)
+          (cond ((null? vars)
+                 (env-loop (enclosing-environment env)))
+                ((eq? var (car vars))
+                 (let ((val (car vals)))
+                   (if (eq? val '*unassigned*)
+                     (error "Variable value is undefined --" var)
+                     val)))
+                (else (scan (cdr vars) 
+                            (cdr vals)))))
+        (if (eq? env the-empty-environment)
+          (error "Unbound variable" var)
+          (let ((frame (first-frame env)))
+            (scan (frame-variables frame)
+                  (frame-values frame)))))
+      (env-loop env))
+
+;b.
+    (define (make-let vars exps)
+      (cons 'let (cons vars exps)))
+
+(define (scan-out-defines body)
+  (define (collect seqs defs exps)
+    (cond ((null? seqs) (cons defs exps))
+          ((definition? (car seqs))
+           (collect (cdr seqs) 
+                    (cons (car seqs) defs) 
+                    exps))
+          (else 
+            (collect (cdr seqs) 
+                     defs 
+                     (cons (car seqs) exps)))))
+  (let ((defs-exps (collect body '() '())))
+    (if (null? (car defs-exps))
+      body
+      (list (make-let (map (lambda (def)
+                             (list (definition-variable def) '*unassigned*))
+                           (car defs-exps))
+                      (append (map (lambda (def)
+                                     (list 'set! 
+                                           (definition-variable def) 
+                                           (definition-value def)))
+                                   (car defs-exps))
+                              (cdr defs-exps)))))))
+
+
+
+
+
 
 
