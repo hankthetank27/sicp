@@ -429,6 +429,32 @@
       (list 'procedure params (scan-out-defines body) env))
 
 
+;4.17
+    
+    ; { global-env -- f: -> (args, body) }
+    ; (f(args)): 
+    ;    { env1 -- args: args } --> global-env
+    ;    (lambda(defines)): 
+    ;       { env2 -- defines: defines } --> env1
 
+    ; Scanning the function body and creates an intermedite environment for the
+    ; internal definitions by using let as a derived expression to construct a 
+    ; lambda expression, passing the definition as variable bindings into the 
+    ; new frame.
 
+    ; We can create a simultaneous scope by instead of using let to define a nested 
+    ; scope, we can modify scan-out-defines to repalce the function parms to pass in
+    ; the variable named in the internal definitions, and set their values before
+    ; the original function body is called.
+    ; EG.
+    ;
+    ;((lambda (<vars> u v)
+    ;   (set! u <e1>)
+    ;   (set! v <e2>)
+    ;   <e3>)
+    ;   <vars> *unassigned* *unassigned*)
+    ;
+    ; this approach would also require modifying how procedures are normally applied,
+    ; appending the undefined variable to the passed in args list.
 
+;4.18
