@@ -458,3 +458,56 @@
     ; appending the undefined variable to the passed in args list.
 
 ;4.18
+
+    (define (solve f y0 dt)
+      (define y (integral (delay dy) y0 dt))
+      (define dy (stream-map f y))
+      y)
+
+    (define (solve f y0 dt)
+      ((lambda (y dy)
+         ((lambda (a b)
+            (set! y a)
+            (set! dy b))
+          (integral (delay dy) y0 dt)
+          (stream-map f y))
+         y)
+       '*unassigned* 
+       '*unassigned*))
+
+    ; this will not work because when we pass the inner lambda of solve the arguments...
+        ; (integral (delay dy) y0 dt)
+        ; (stream-map f y))
+    ; they dont yet have values bound to either dy or y, thus cannot be evaluated.
+    ; in particular, the variable y in this is problematic because stream-map
+    ; will try and produce an intial value which cannot be forced because no y mapping exists.
+    
+    ; on the other hand, our previous implementation of scan-out-defines would work,
+    ; allowing the sequential evaluation of setting the variable values, thereby
+    ; giving us a value for y before stream-map is called.
+
+;4.19
+    ; this is the current tranformation of the expression in question:
+    ;a.
+    ((let ((f '*unassigned*))
+       (set! f (lambda (x) 
+                 (define b (+ a x)) 
+                 (define a 5) (+ a b)))
+       (f 10)))
+
+    ;b.
+    ((set! f (lambda (x) (define b (+ a x)) (define a 5) (+ a b))) (f 10))
+
+    ;c.
+    ((let ((a '*unassigned*) 
+           (b '*unassigned*))
+       (set! a 5) 
+       (set! b (+ a x)) 
+       (+ a b)))
+
+    ;d.
+    ((set! a 5) (set! b (+ a x)) (+ a b))
+
+    ; this performs in the way the eva describes in the book -- which to me 
+    ; seems correct...
+
