@@ -511,3 +511,43 @@
     ; this performs in the way the eva describes in the book -- which to me 
     ; seems correct...
 
+;4.20
+    
+    ; anon rec example
+    ((lambda (n)
+       ((lambda (fact)
+          (fact fact n))
+        (lambda (f x)
+          (if (= 1 x)
+            x
+            (* x (f f (- x 1)))))))
+     10)
+
+    ; letrec ex.
+    (letrec ((f (lambda (x) 
+                  (if (= x 0)
+                    x
+                    (f (- x 1))))))
+      (f 10))
+
+
+    (define (letrec? exp)
+      (tagged-list? exp 'letrec))
+    (define (letrec-body exp)
+      (cddr exp))
+    (define (letrec-vars exp)
+      (map car (cadr exp)))
+    (define (letrec-pairs exp)
+      (cadr exp))
+    (define (eval-letrec exp env)
+      (eval (letrec->comb exp) env))
+    (define (letrec->let exp)
+      (list 'let 
+            (map (lambda (var)
+                   (cons var ''*unassigned*))
+                 (letrec-vars exp))
+            (make-begin (append (map (lambda (pair)
+                           (list 'set! (car pair) (cadr pair)))
+                         (letrec-pairs exp))
+                    (letrec-body exp)))))
+
